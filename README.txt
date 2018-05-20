@@ -1,0 +1,2 @@
+- La api de twitter para conseguir los twits por locacion y filtrado por candidato
+- filtrar que sean solo en español
