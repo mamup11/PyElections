@@ -1,10 +1,11 @@
 import nltk
+import Util as util
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import SnowballStemmer
 from string import punctuation
 from sklearn.feature_extraction.text import CountVectorizer
-
+## Codigo sacado de: http://blog.manugarri.com/sentiment-analysis-in-spanish/
 nltk.download('stopwords')
 nltk.download('punkt')
 
@@ -57,11 +58,17 @@ pipeline = Pipeline([
     ('cls', LinearSVC()),
 ])
 
-
+# {'vect__min_df': 0.01,
+# 'cls__max_iter': 500,
+# 'vect__ngram_range': (1, 2),
+# 'cls__C': 0.7,
+# 'vect__max_df': 0.5,
+# 'cls__loss': 'squared_hinge',
+# 'vect__max_features': 500}
 # Aqui definimos el espacio de parámetros a explorar
 parameters = {
     'vect__max_df': (0.5, 1.9),
-    'vect__min_df': (10, 20,50),
+    'vect__min_df': (0.01, 0.02, 0.05),
     'vect__max_features': (500, 1000),
     'vect__ngram_range': ((1, 1), (1, 2)),  # unigramas or bigramas
     'cls__C': (0.2, 0.5, 0.7),
@@ -69,30 +76,18 @@ parameters = {
     'cls__max_iter': (500, 1000)
 }
 
-import csv
 
 
-def readcsv(filename):
-    ifile = open(filename, "r")
-    reader = csv.reader(ifile, delimiter=",")
-
-    content = []
-    polarity = []
-
-    for row in reader:
-        if len(row) == 2:
-            content.append(row[0])
-            if row[1] == 'neg':
-                polarity.append(0)
-            else:
-                polarity.append(1)
-
-    ifile.close()
-    return content, polarity
+def parameterSearch():
+    tweetsContent, tweetsPolarity = util.readcsv("Training Data/2clases_es_generaltassisol_pub.csv", 500)
 
 
-twitsContent, twitsPolarity = readcsv("Training Data/2clases_es_generaltassisol_pub.csv")
+    grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, scoring='roc_auc')
+    grid_search.fit(tweetsContent, tweetsPolarity)
 
+    tweet = ["Aquí os dejo un video con algunas reacciones del público al salir de ver Grease!! "
+            "Muchisimas gracias a todos!!! http://t.co/ytJUWcLn", "Día de la Mujer/3. La violencia machista y la brecha salarial "
+            "lastran la igualdad en la UE  http://t.co/mWmwrRO4 via @el_pais"]
 
-grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, scoring='roc_auc')
-grid_search.fit(twitsContent, twitsPolarity)
+    prediction2 = pipeline.predict(tweet)
+    print(prediction2)

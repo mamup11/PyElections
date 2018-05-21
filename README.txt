@@ -1,4 +1,4 @@
-- La api de twitter para conseguir los twits por locacion y filtrado por candidato
+- La api de twitter para conseguir los tweets por locacion y filtrado por candidato
 - filtrar que sean solo en español
 - modificar vectorizer para que ignore ciertos caracteres especiales en el español y para que realice el proceso de stemming que sirve para volver las palabras a su raiz. i.e. Transformar -> transform
 - convertir el data set en csv y montarlo en memoria para ser procesado como arreglo
