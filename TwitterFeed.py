@@ -6,11 +6,16 @@ from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
 ## Codigo del Listener sacado de: https://github.com/manugarri/tweets_map
+
 candidates = ["german vargas", "@German_Vargas",
               "gustavo petro", "@petrogustavo",
               "humberto de la calle", "@DeLaCalleHum",
               "ivan duque", "@IvanDuque",
               "sergio fajardo", "@sergio_fajardo"]
+
+query = "german vargas OR @German_Vargas OR gustavo petro OR @petrogustavo OR " \
+        "humberto de la calle OR @DeLaCalleHum OR ivan duque OR @IvanDuque OR " \
+        "sergio fajardo OR @sergio_fajardo"
 
 ckey = os.getenv('ckey')
 csecret = os.getenv('csecret')
@@ -98,12 +103,13 @@ class Listener(StreamListener):
 def parse(tweets):
     for tweet in tweets:
         print(tweet.text)
-    return tweet
+    return tweets
 
 
-def search(search):
+def search(date):
     api = tweepy.API(doAuth())
-    tweets = api.search(q=["german vargas", "German_Vargas"])
+    tweets = api.search(q=query, count=500, tweet_mode="extended")#, until=date)
+    print(candidates.__str__())
     dataObject = parse(tweets)
     return dataObject
 
@@ -127,12 +133,18 @@ def stream():
 
 def exit_handler():
     global twitterStream
-    twitterStream.disconnect()
-    vargasFile.close()
-    petroFile.close()
-    calleFile.close()
-    duqueFile.close()
-    fajardoFile.close()
+    if twitterStream is not None:
+        twitterStream.disconnect()
+    if vargasFile is not None:
+        vargasFile.close()
+    if petroFile is not None:
+        petroFile.close()
+    if calleFile is not None:
+        calleFile.close()
+    if duqueFile is not None:
+        duqueFile.close()
+    if fajardoFile is not None:
+        fajardoFile.close()
 
-
+search("")
 atexit.register(exit_handler)

@@ -1,5 +1,6 @@
 import csv
-
+from datetime import datetime
+from datetime import timedelta
 
 def readTrainingDataCsv(filename, limit):
     ifile = open(filename, "r")
@@ -27,3 +28,30 @@ def readTrainingDataCsv(filename, limit):
 
     ifile.close()
     return content, polarity
+
+
+def readTweetsCsv(filename, limit):
+    ifile = open(filename, "r")
+    reader = csv.reader(ifile, delimiter=",")
+    ifileAux = open(filename, "r")
+    readerAux = csv.reader(ifileAux, delimiter=",")
+
+    tweets = []
+    count = 0
+    start = 0
+    row_count = sum(1 for row in readerAux)
+    if row_count > limit:
+        start = row_count - limit
+
+    for _ in range(start):
+        next(reader)
+    for row in reader:
+        if limit != -1 and count >= limit:
+            break
+        count = count + 1
+        timeAdjust = timedelta(hours=5)
+        row[1] = datetime.strptime(str(row[1]), '%Y-%m-%d  %H:%M:%S') - timeAdjust
+        tweets.append(row)
+
+    ifile.close()
+    return tweets

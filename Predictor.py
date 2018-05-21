@@ -34,9 +34,9 @@ def predict(tweet):
 
     prediction = pipeline.predict(tweet)
     i = 0
-    while i < len(prediction):
-        print("Predicted: " + str(prediction[i]) + " for twit: " + tweet[i])
-        i = i + 1;
+    # while i < len(prediction):
+    #    print("Predicted: " + str(prediction[i]) + " for twit: " + tweet[i])
+    #    i = i + 1;
     return prediction
 
 

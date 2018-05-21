@@ -81,7 +81,6 @@ parameters = {
 def parameterSearch():
     tweetsContent, tweetsPolarity = util.readcsv("Training Data/2clases_es_generaltassisol_pub.csv", 500)
 
-
     grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, scoring='roc_auc')
     grid_search.fit(tweetsContent, tweetsPolarity)
 

@@ -1,7 +1,6 @@
 from threading import Thread
 import TwitterFeed
 import atexit
-import Predictor
 import Menu
 
 menu = "Seleccionar opcion:\n"\
@@ -13,7 +12,6 @@ menu = "Seleccionar opcion:\n"\
        "0: Salir\n"
 
 feed = None
-predictor = None
 
 
 def exit_handler():
@@ -23,9 +21,11 @@ def exit_handler():
 
 def predictLast3Minutes():
     feed.exit_handler()
-    Menu.pedictLast3Minutes()
+    Menu.predictLast3Minutes()
     feed.stream()
 
+def predictLast7Days():
+    Menu.predictLast7Days()
 
 def shutdown():
     exit_handler()
@@ -54,11 +54,9 @@ def userInput():
             print("Invalid Input!")
 
 
-
 if __name__ == '__main__':
     atexit.register(exit_handler)
     feed = TwitterFeed
-    predictor = Predictor
     feed.stream()
     userInput()
 
