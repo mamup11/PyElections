@@ -40,8 +40,11 @@ def predict(tweet):
     return prediction
 
 
-#tweets = [
-#        "#Perfil @German_Vargas \"es el hombre mejor preparado para asumir la presidencia\", asegura su esposa Luz María Zapata http://ow.ly/rnsy30k5a96 "
+tweets = [
+    "La comida fue muy cara",
+    "Duque tiene muy buenas propuestas",
+    "Petro deberia ser presidente por que es el mejor",
+    "De la calle es un corrupto y no deberia ganar"
 
-#    ]
-#predict(tweets)
+]
+print(predict(tweets))

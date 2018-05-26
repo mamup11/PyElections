@@ -1,10 +1,12 @@
 import nltk
 import Util as util
+import xml.etree.ElementTree as ET
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.stem import SnowballStemmer
 from string import punctuation
 from sklearn.feature_extraction.text import CountVectorizer
+
 ## Codigo sacado de: http://blog.manugarri.com/sentiment-analysis-in-spanish/
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -77,7 +79,6 @@ parameters = {
 }
 
 
-
 def parameterSearch():
     tweetsContent, tweetsPolarity = util.readcsv("Training Data/2clases_es_generaltassisol_pub.csv", 500)
 
@@ -90,3 +91,28 @@ def parameterSearch():
 
     prediction2 = pipeline.predict(tweet)
     print(prediction2)
+
+
+def parseTASSDataset():
+    corpus = ET.parse("Training Data/general-train-tagged-3l.xml")
+    tweets = corpus.getroot()
+    count = 0
+    for tweet in tweets.findall("tweet"):
+        count = count + 1
+
+    print(count)
+
+    corpus = ET.parse("Training Data/intertass-train-tagged.xml")
+    tweets = corpus.getroot()
+    count2 = 0
+    for tweet in tweets.findall("tweet"):
+        count2 = count2 + 1
+
+    print(count2)
+    print(count+count2)
+
+
+    return
+
+
+#parseTASSDataset()

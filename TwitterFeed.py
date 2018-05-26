@@ -22,6 +22,8 @@ csecret = os.getenv('csecret')
 atoken = os.getenv('atoken')
 asecret = os.getenv('asecret')
 
+DEBUG = os.getenv('P2DEBUG')
+
 twitterStream = None
 
 vargasFile = None
@@ -59,6 +61,20 @@ def getFile(text):
     return None
 
 
+def authorFilter(user):
+    if str(user).lower().__contains__(candidates[1].lower()):
+        return True
+    if str(user).lower().__contains__(candidates[3].lower()):
+        return True
+    if str(user).lower().__contains__(candidates[5].lower()):
+        return True
+    if str(user).lower().__contains__(candidates[7].lower()):
+        return True
+    if str(user).lower().__contains__(candidates[9].lower()):
+        return True
+    return False
+
+
 class Listener(StreamListener):
 
     def on_status(self, status):#(self, data):
@@ -84,16 +100,18 @@ class Listener(StreamListener):
                     1
         if text is not None:
             user = '@' + status.user.screen_name
+            if authorFilter(str(user)):
+                return True
             created = status.created_at
             tweet = '\"%s\",\"%s\",\"%s\"\n' % (user, created, text)
 
             files = getFile(text)
             if files is not None:
+                if user.__contains__("mamup11"):#DEBUG is not None and DEBUG == 1:
+                    print("DEBUG-Tweeter-Stream= " + tweet)
                 for file in files:
                     file.write(tweet)
                     #print(file.name + " + " +str(1))
-            else:
-                1
         return True
 
     def on_error(self, status):
@@ -146,5 +164,4 @@ def exit_handler():
     if fajardoFile is not None:
         fajardoFile.close()
 
-search("")
 atexit.register(exit_handler)

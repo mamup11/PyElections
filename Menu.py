@@ -92,5 +92,3 @@ def predictLast7Days():
     search = feed.search(date)
     if search is not None:
         1
-
-predictLast7Days()
