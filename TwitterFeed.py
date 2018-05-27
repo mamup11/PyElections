@@ -107,7 +107,7 @@ class Listener(StreamListener):
 
             files = getFile(text)
             if files is not None:
-                if user.__contains__("mamup11"):#DEBUG is not None and DEBUG == 1:
+                if DEBUG is not None and DEBUG == 1:
                     print("DEBUG-Tweeter-Stream= " + tweet)
                 for file in files:
                     file.write(tweet)
