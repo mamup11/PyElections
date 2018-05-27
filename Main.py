@@ -51,6 +51,7 @@ def userInput():
             funct = switcher.get(option, lambda: "Not an option")
             funct()
         except Exception as e:
+            print(e)
             print("Invalid Input!")
 
 

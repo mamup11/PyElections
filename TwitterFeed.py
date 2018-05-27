@@ -135,15 +135,15 @@ def search(date):
 def stream():
     auth = doAuth()
     global vargasFile
-    vargasFile = open('./Tweets/tweets_of_vargas.csv', 'a')
+    vargasFile = open('./Tweets/tweets_of_vargas.csv', 'a', encoding="utf8")
     global petroFile
-    petroFile = open('./Tweets/tweets_of_petro.csv', 'a')
+    petroFile = open('./Tweets/tweets_of_petro.csv', 'a', encoding="utf8")
     global calleFile
-    calleFile = open('./Tweets/tweets_of_calle.csv', 'a')
+    calleFile = open('./Tweets/tweets_of_calle.csv', 'a', encoding="utf8")
     global duqueFile
-    duqueFile = open('./Tweets/tweets_of_duque.csv', 'a')
+    duqueFile = open('./Tweets/tweets_of_duque.csv', 'a', encoding="utf8")
     global fajardoFile
-    fajardoFile = open('./Tweets/tweets_of_fajardo.csv', 'a')
+    fajardoFile = open('./Tweets/tweets_of_fajardo.csv', 'a', encoding="utf8")
     global twitterStream
     twitterStream = Stream(auth, Listener(), tweet_mode='extended')
     twitterStream.filter(track=candidates, async=True)

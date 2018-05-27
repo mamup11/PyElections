@@ -3,7 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 
 def readTrainingDataCsv(filename, limit):
-    ifile = open(filename, "r")
+    ifile = open(filename, "r", encoding="utf8")
     reader = csv.reader(ifile, delimiter=",")
 
     content = []
@@ -31,9 +31,9 @@ def readTrainingDataCsv(filename, limit):
 
 
 def readTweetsCsv(filename, limit):
-    ifile = open(filename, "r")
+    ifile = open(filename, "r", encoding="utf8")
     reader = csv.reader(ifile, delimiter=",")
-    ifileAux = open(filename, "r")
+    ifileAux = open(filename, "r", encoding="utf8")
     readerAux = csv.reader(ifileAux, delimiter=",")
 
     tweets = []
@@ -46,12 +46,16 @@ def readTweetsCsv(filename, limit):
     for _ in range(start):
         next(reader)
     for row in reader:
-        if limit != -1 and count >= limit:
+        if limit != -1 and count == limit:
             break
         count = count + 1
         timeAdjust = timedelta(hours=5)
-        row[1] = datetime.strptime(str(row[1]), '%Y-%m-%d  %H:%M:%S') - timeAdjust
-        tweets.append(row)
+        try:
+            row[1] = datetime.strptime(str(row[1]), '%Y-%m-%d  %H:%M:%S') - timeAdjust
+            tweets.append(row)
+        except Exception as e:
+            1
+
 
     ifile.close()
     return tweets

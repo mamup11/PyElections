@@ -47,4 +47,4 @@ tweets = [
     "De la calle es un corrupto y no deberia ganar"
 
 ]
-print(predict(tweets))
+# print(predict(tweets))
