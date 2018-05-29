@@ -28,8 +28,11 @@ The following env variables must be setted in order to execute the project:
 Twitter authentification:
 
 `ckey=XXXXXXXXXX` 
+
 `csecret=XXXXXXXXXX`
+
 `atoken=XXXXXXXXXX`
+
 `asecret=XXXXXXXXXX`
 
 Time (this variable must be set with the time zone of the device, i.e. for UTC−05:00 put -5):
