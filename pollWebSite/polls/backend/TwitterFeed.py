@@ -6,6 +6,7 @@ from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
 from django.conf import settings
+import threading
 from multiprocessing import Lock
 
 ## Codigo del Listener sacado de: https://github.com/manugarri/tweets_map
@@ -80,7 +81,6 @@ class Listener(StreamListener):
             settings.FEED_LOCK.acquire()
             created = status.created_at
             tweet = [user, created, text]
-            print("appended")
             settings.TWEETS.append(tweet)
             settings.FEED_LOCK.release()
         return True
@@ -103,11 +103,20 @@ def search(date):
     return dataObject
 
 
+def stream_daemon():
+    while True:
+        try:
+            auth = doAuth()
+            global twitterStream
+            twitterStream = Stream(auth, Listener(), tweet_mode='extended')
+            twitterStream.filter(track=candidates)
+        except Exception as e:
+            print("Excepcion en stream_daemon: \n" + e.__str__())
+
 def stream():
-    auth = doAuth()
-    global twitterStream
-    twitterStream = Stream(auth, Listener(), tweet_mode='extended')
-    twitterStream.filter(track=candidates, async=True)
+    d = threading.Thread(name='daemon', target=stream_daemon)
+    d.setDaemon(True)
+    d.start()
 
 
 def exit_handler():

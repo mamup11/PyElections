@@ -126,18 +126,18 @@ def predictLast7Days():
         1
 
 
-def readFile(candidate):
+def readFile(candidate, limit):
     tweets = []
     if candidate == 1:
-        tweets = Util.readTweetsCsv(vargasFile, 10)
+        tweets = Util.readTweetsCsv(vargasFile, limit)
     if candidate == 2:
-        tweets = Util.readTweetsCsv(petroFile, 10)
+        tweets = Util.readTweetsCsv(petroFile, limit)
     if candidate == 3:
-        tweets = Util.readTweetsCsv(calleFile, 10)
+        tweets = Util.readTweetsCsv(calleFile, limit)
     if candidate == 4:
-        tweets = Util.readTweetsCsv(duqueFile, 10)
+        tweets = Util.readTweetsCsv(duqueFile, limit)
     if candidate == 5:
-        tweets = Util.readTweetsCsv(fajardoFile, 10)
+        tweets = Util.readTweetsCsv(fajardoFile, limit)
 
     return tweets
 
@@ -198,7 +198,7 @@ def porcentajes(prediction):
 
 def createDto(candidate):
     name = selectName(candidate)
-    tweets = readFile(candidate)
+    tweets = readFile(candidate, 10)
     veces_mencionado = len(tweets)
     personas_hablando = len(getAuthors(tweets))
     threeMinutesAgo = datetime.now() - timedelta(seconds=180)
@@ -243,14 +243,10 @@ def getCandidate(text):
 
 
 def addToCandidate(tweet):
-    candidate = getCandidate(tweet[2])
+    candidate = getCandidate(tweet[2]) - 1
     settings.CANDIDATOS[candidate].veces_mencionado = settings.CANDIDATOS[candidate].veces_mencionado + 1
     settings.CANDIDATOS[candidate].personas_hablando = settings.CANDIDATOS[candidate].personas_hablando + 1
-    threeMinutesAgo = datetime.now() - timedelta(seconds=180)
-    lastTweets = len([x for x in Util.readTweetsCsv(vargasFile, 1000) if x[1] >= threeMinutesAgo])
-    promedio = int(round(lastTweets / 3))
-    settings.CANDIDATOS[candidate].ultimas_menciones = lastTweets
-    settings.CANDIDATOS[candidate].promedio = promedio
+
     prediction = predictSingle([tweet[2]])
     count = [settings.CANDIDATOS[candidate].positivos, settings.CANDIDATOS[candidate].negativos]
     if prediction == 1:
@@ -264,6 +260,15 @@ def addToCandidate(tweet):
     settings.CANDIDATOS[candidate].negativos_porcentaje = np
     rat = ratio(count[0], count[1])
     settings.CANDIDATOS[candidate].ratio = rat
+
+
+def lastUpdate():
+    for candidate in range(5):
+        threeMinutesAgo = datetime.now() - timedelta(seconds=180)
+        lastTweets = len([ x for x in readFile(candidate + 1, 1000) if x[1] >= threeMinutesAgo])
+        promedio = int(round(lastTweets / 3))
+        settings.CANDIDATOS[candidate].ultimas_menciones = lastTweets
+        settings.CANDIDATOS[candidate].promedio = promedio
 
 def openFiles():
     global vargasFileCsv
@@ -329,24 +334,26 @@ def update():
         settings.FEED_LOCK.acquire()
 
         tweets = settings.TWEETS
+        openFiles()
         for tweet in tweets:
             try:
-                print(("funciona"))
                 tweetText = '\"%s\",\"%s\",\"%s\"\n' % (tweet[0], tweet[1], tweet[2])
-                openFiles()
+
                 files = getFile(tweet[2])
-                saved = False
                 if files is not None:
                     for file in files:
                         file.write(tweetText)
-                        saved = True
-
-                closeFiles()
-                if saved:
                     addToCandidate(tweet)
+
+
                 
             except Exception as e:
                 1
+        closeFiles()
+        try:
+            lastUpdate()
+        except Exception as e:
+            1
         settings.TWEETS = []
 
         settings.FEED_LOCK.release()
