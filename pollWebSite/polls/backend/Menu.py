@@ -202,7 +202,7 @@ def createDto(candidate):
     veces_mencionado = len(tweets)
     personas_hablando = len(getAuthors(tweets))
     threeMinutesAgo = datetime.now() - timedelta(seconds=180)
-    lastTweets = len([x for x in Util.readTweetsCsv(vargasFile, 500) if x[1] >= threeMinutesAgo])
+    lastTweets = len([x for x in readFile(candidate, 500) if x[1] >= threeMinutesAgo])
     promedio = int(round(lastTweets/3))
     img_file = selectImage(candidate)
     prediction = predictSingle(getText(tweets))
@@ -344,8 +344,6 @@ def update():
                     for file in files:
                         file.write(tweetText)
                     addToCandidate(tweet)
-
-
                 
             except Exception as e:
                 1
