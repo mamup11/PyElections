@@ -1,11 +1,17 @@
 from . import Util
+import time
 from datetime import datetime
 from datetime import timedelta
 from . import Predictor
 from . import TwitterFeed
 from ..models import CandidatoDto
+from django.conf import settings
+from multiprocessing import Pool, Lock
+import atexit
 
 predictor = Predictor
+
+feed = None
 
 vargasFile = './Tweets/tweets_of_vargas.csv'
 petroFile = './Tweets/tweets_of_petro.csv'
@@ -15,9 +21,14 @@ fajardoFile = './Tweets/tweets_of_fajardo.csv'
 
 last3MinutesString = "{} ha tenido en los ultimos 3 minutos {} comentarios positivos y {} comentarios negativos"
 
+
 def shutdown():
     exit(0)
 
+
+def exit_handler():
+    if feed is not None:
+        feed.exit_handler()
 
 def getText(tweets):
     texts = []
@@ -106,25 +117,22 @@ def predictLast7Days():
     if search is not None:
         1
 
-from multiprocessing.pool import ThreadPool
-
-from multiprocessing.pool import Pool
-
 
 def readFile(candidate):
     tweets = []
     if candidate == 1:
-        tweets = Util.readTweetsCsv(vargasFile, -1)
+        tweets = Util.readTweetsCsv(vargasFile, 10)
     if candidate == 2:
-        tweets = Util.readTweetsCsv(petroFile, -1)
+        tweets = Util.readTweetsCsv(petroFile, 10)
     if candidate == 3:
-        tweets = Util.readTweetsCsv(calleFile, -1)
+        tweets = Util.readTweetsCsv(calleFile, 10)
     if candidate == 4:
-        tweets = Util.readTweetsCsv(duqueFile, -1)
+        tweets = Util.readTweetsCsv(duqueFile, 10)
     if candidate == 5:
-        tweets = Util.readTweetsCsv(fajardoFile, -1)
+        tweets = Util.readTweetsCsv(fajardoFile, 10)
 
     return tweets
+
 
 def selectName(candidate):
     name = ""
@@ -141,6 +149,7 @@ def selectName(candidate):
 
     return name
 
+
 def selectImage(candidate):
     img = ""
     if candidate == 1:
@@ -156,6 +165,7 @@ def selectImage(candidate):
 
     return img
 
+
 def mcd(a, b):
     resto = 0
     while b > 0:
@@ -163,6 +173,7 @@ def mcd(a, b):
         b = a % b
         a = resto
     return a
+
 
 def ratio(a, b):
     c = a / mcd(a, b)
@@ -172,8 +183,8 @@ def ratio(a, b):
 
 def porcentajes(prediction):
     count = prediction[0] + prediction[1]
-    pos = prediction[0] / count
-    neg = prediction[1] / count
+    pos = (prediction[0] / count) * 100
+    neg = (prediction[1] / count) * 100
     return pos, neg
 
 
@@ -203,6 +214,73 @@ def createDto(candidate):
                                 img_file)
     return candidateDto, tweets
 
+
+def getCandidate(text):
+    if TwitterFeed.candidates[0].lower() in text.lower() or TwitterFeed.candidates[1].lower() in text.lower():
+        return 1
+
+    if TwitterFeed.candidates[2].lower() in text.lower() or TwitterFeed.candidates[3].lower() in text.lower():
+        return 2
+
+    if TwitterFeed.candidates[4].lower() in text.lower() or TwitterFeed.candidates[5].lower() in text.lower():
+        return 3
+
+    if TwitterFeed.candidates[6].lower() in text.lower() or TwitterFeed.candidates[7].lower() in text.lower():
+        return 4
+
+    if TwitterFeed.candidates[8].lower() in text.lower() or TwitterFeed.candidates[9].lower() in text.lower():
+        return 5
+
+    return None
+
+
+def addToCandidate(tweet):
+    candidate = getCandidate(tweet[2])
+    settings.CANDIDATOS[candidate].veces_mencionado = settings.CANDIDATOS[candidate].veces_mencionado + 1
+    settings.CANDIDATOS[candidate].personas_hablando = settings.CANDIDATOS[candidate].personas_hablando + 1
+    threeMinutesAgo = datetime.now() - timedelta(seconds=180)
+    lastTweets = len([x for x in Util.readTweetsCsv(vargasFile, 1000) if x[1] >= threeMinutesAgo])
+    promedio = lastTweets / 3
+    settings.CANDIDATOS[candidate].ultimas_menciones = lastTweets
+    settings.CANDIDATOS[candidate].promedio = promedio
+    prediction = predictSingle(tweet[2])
+    count = [settings.CANDIDATOS[candidate].positivos, settings.CANDIDATOS[candidate].negativos]
+    if prediction == 1:
+        count[0] = count[0] + 1
+    else:
+        count[1] = count[1] + 1
+    pp, np = porcentajes(count)
+    settings.CANDIDATOS[candidate].positivos = count[0]
+    settings.CANDIDATOS[candidate].positivos_porcentaje = pp
+    settings.CANDIDATOS[candidate].negativos = count[1]
+    settings.CANDIDATOS[candidate].negativos_porcentaje = np
+    rat = ratio(count[0], count[1])
+    settings.CANDIDATOS[candidate].ratio = rat
+
+def update():
+    while True:
+        settings.LOCK.acquire()
+        settings.FEED_LOCK.acquire()
+
+        tweets = settings.TWEETS
+        for tweet in tweets:
+            try:
+                print(("funciona"))
+                tweetText = '\"%s\",\"%s\",\"%s\"\n' % (tweet[0], tweet[1], tweet[2])
+                files = TwitterFeed.getFile(tweet[2])
+                if files is not None:
+                    for file in files:
+                        file.write(tweetText)
+
+                addToCandidate(tweet)
+            except Exception as e:
+                1
+        settings.TWEETS = []
+        settings.FEED_LOCK.release()
+        settings.LOCK.release()
+        time.sleep(30)
+
+
 def fillDto():
     pool = Pool(5)
     vargasThread = pool.apply_async(createDto, [1])
@@ -217,4 +295,26 @@ def fillDto():
     fajardoDto, fajardoTweets = fajardoThread.get()
 
     candidates = [vargasDto, petroDto, calleDto, duqueDto, fajardoDto]
-    return candidates
+    settings.CANDIDATOS = candidates
+
+    settings.LOCK = Lock()
+    settings.FEED_LOCK = Lock()
+
+    atexit.register(exit_handler)
+    global feed
+    feed = TwitterFeed
+    feed.stream()
+    Pool(1).apply_async(update, [])
+
+
+
+def getDto():
+    settings.LOCK.acquire()
+    candidatos = settings.CANDIDATOS
+    settings.LOCK.release()
+    return candidatos
+
+
+
+
+

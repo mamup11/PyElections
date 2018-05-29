@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from .backend import Menu
 
+Menu.fillDto()
+
 def index(request):
-    candidatos = Menu.fillDto()
-    context = {'candidato': candidatos[0]}
+    candidatos = Menu.getDto()
+    context = {'candidatos': candidatos}
     return render(request, 'index.html', context)

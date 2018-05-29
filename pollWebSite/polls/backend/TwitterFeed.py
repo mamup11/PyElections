@@ -5,6 +5,9 @@ import atexit
 from tweepy import Stream
 from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
+from django.conf import settings
+from multiprocessing import Lock
+
 ## Codigo del Listener sacado de: https://github.com/manugarri/tweets_map
 
 candidates = ["german vargas", "@German_Vargas",
@@ -102,16 +105,11 @@ class Listener(StreamListener):
             user = '@' + status.user.screen_name
             if authorFilter(str(user)):
                 return True
+            settings.FEED_LOCK.acquire()
             created = status.created_at
-            tweet = '\"%s\",\"%s\",\"%s\"\n' % (user, created, text)
-
-            files = getFile(text)
-            if files is not None:
-                if user.__contains__("mamup11"):#DEBUG is not None and DEBUG == 1:
-                    print("DEBUG-Tweeter-Stream= " + tweet)
-                for file in files:
-                    file.write(tweet)
-                    #print(file.name + " + " +str(1))
+            tweet = [user, created, text]
+            settings.TWEETS.append(tweet)
+            settings.FEED_LOCK.release()
         return True
 
     def on_error(self, status):
@@ -135,15 +133,25 @@ def search(date):
 def stream():
     auth = doAuth()
     global vargasFile
-    vargasFile = open('./Tweets/tweets_of_vargas.csv', 'a')
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_vargas.csv')
+    vargasFile = open(file_path, 'a')
     global petroFile
-    petroFile = open('./Tweets/tweets_of_petro.csv', 'a')
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_petro.csv')
+    vargasFile = open(file_path, 'a')
     global calleFile
-    calleFile = open('./Tweets/tweets_of_calle.csv', 'a')
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_calle.csv')
+    vargasFile = open(file_path, 'a')
     global duqueFile
-    duqueFile = open('./Tweets/tweets_of_duque.csv', 'a')
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_duque.csv')
+    vargasFile = open(file_path, 'a')
     global fajardoFile
-    fajardoFile = open('./Tweets/tweets_of_fajardo.csv', 'a')
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_fajardo.csv')
+    vargasFile = open(file_path, 'a')
     global twitterStream
     twitterStream = Stream(auth, Listener(), tweet_mode='extended')
     twitterStream.filter(track=candidates, async=True)
