@@ -26,6 +26,7 @@ In order to execute this program the following libreries are needed:
 The following env variables must be setted in order to execute the project:
 
 Twitter authentification:
+
 `ckey=XXXXXXXXXX` 
 `csecret=XXXXXXXXXX`
 `atoken=XXXXXXXXXX`
