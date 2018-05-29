@@ -6,7 +6,7 @@ from datetime import timedelta
 def readTrainingDataCsv(filename, limit):
     module_dir = os.path.dirname(__file__)
     file_path = os.path.join(module_dir, filename)
-    ifile = open(file_path, "r")
+    ifile = open(file_path, "r", encoding="utf8")
     reader = csv.reader(ifile, delimiter=",")
 
     content = []
@@ -36,9 +36,9 @@ def readTrainingDataCsv(filename, limit):
 def readTweetsCsv(filename, limit):
     module_dir = os.path.dirname(__file__)
     file_path = os.path.join(module_dir, filename)
-    ifile = open(file_path, "r")
+    ifile = open(file_path, "r", encoding="utf8")
     reader = csv.reader(ifile, delimiter=",")
-    ifileAux = open(file_path, "r")
+    ifileAux = open(file_path, "r", encoding="utf8")
     readerAux = None
     if limit is not -1:
         readerAux = csv.reader(ifileAux, delimiter=",")

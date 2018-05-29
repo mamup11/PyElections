@@ -8,10 +8,18 @@ from ..models import CandidatoDto
 from django.conf import settings
 from multiprocessing import Pool, Lock
 import atexit
+import threading
+import os
 
 predictor = Predictor
 
 feed = None
+
+vargasFileCsv = None
+petroFileCsv = None
+calleFileCsv = None
+duqueFileCsv = None
+fajardoFileCsv = None
 
 vargasFile = './Tweets/tweets_of_vargas.csv'
 petroFile = './Tweets/tweets_of_petro.csv'
@@ -195,7 +203,7 @@ def createDto(candidate):
     personas_hablando = len(getAuthors(tweets))
     threeMinutesAgo = datetime.now() - timedelta(seconds=180)
     lastTweets = len([x for x in Util.readTweetsCsv(vargasFile, 500) if x[1] >= threeMinutesAgo])
-    promedio = lastTweets/3
+    promedio = int(round(lastTweets/3))
     img_file = selectImage(candidate)
     prediction = predictSingle(getText(tweets))
     count = countComments(prediction)
@@ -240,10 +248,10 @@ def addToCandidate(tweet):
     settings.CANDIDATOS[candidate].personas_hablando = settings.CANDIDATOS[candidate].personas_hablando + 1
     threeMinutesAgo = datetime.now() - timedelta(seconds=180)
     lastTweets = len([x for x in Util.readTweetsCsv(vargasFile, 1000) if x[1] >= threeMinutesAgo])
-    promedio = lastTweets / 3
+    promedio = int(round(lastTweets / 3))
     settings.CANDIDATOS[candidate].ultimas_menciones = lastTweets
     settings.CANDIDATOS[candidate].promedio = promedio
-    prediction = predictSingle(tweet[2])
+    prediction = predictSingle([tweet[2]])
     count = [settings.CANDIDATOS[candidate].positivos, settings.CANDIDATOS[candidate].negativos]
     if prediction == 1:
         count[0] = count[0] + 1
@@ -257,6 +265,64 @@ def addToCandidate(tweet):
     rat = ratio(count[0], count[1])
     settings.CANDIDATOS[candidate].ratio = rat
 
+def openFiles():
+    global vargasFileCsv
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_vargas.csv')
+    vargasFileCsv = open(file_path, 'a', encoding="utf8")
+    global petroFileCsv
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_petro.csv')
+    petroFileCsv = open(file_path, 'a', encoding="utf8")
+    global calleFileCsv
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_calle.csv')
+    calleFileCsv = open(file_path, 'a', encoding="utf8")
+    global duqueFileCsv
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_duque.csv')
+    duqueFileCsv = open(file_path, 'a', encoding="utf8")
+    global fajardoFileCsv
+    module_dir = os.path.dirname(__file__)
+    file_path = os.path.join(module_dir, './Tweets/tweets_of_fajardo.csv')
+    fajardoFileCsv = open(file_path, 'a', encoding="utf8")
+
+
+def getFile(text):
+    files = []
+    if TwitterFeed.candidates[0].lower() in text.lower() or TwitterFeed.candidates[1].lower() in text.lower():
+        files.append(vargasFileCsv)
+
+    if TwitterFeed.candidates[2].lower() in text.lower() or TwitterFeed.candidates[3].lower() in text.lower():
+        files.append(petroFileCsv)
+
+    if TwitterFeed.candidates[4].lower() in text.lower() or TwitterFeed.candidates[5].lower() in text.lower():
+        files.append(calleFileCsv)
+
+    if TwitterFeed.candidates[6].lower() in text.lower() or TwitterFeed.candidates[7].lower() in text.lower():
+        files.append(duqueFileCsv)
+
+    if TwitterFeed.candidates[8].lower() in text.lower() or TwitterFeed.candidates[9].lower() in text.lower():
+        files.append(fajardoFileCsv)
+
+    if len(files) > 0:
+        return files
+    return None
+
+
+def closeFiles():
+    if vargasFile is not None:
+        vargasFileCsv.close()
+    if petroFile is not None:
+        petroFileCsv.close()
+    if calleFile is not None:
+        calleFileCsv.close()
+    if duqueFile is not None:
+        duqueFileCsv.close()
+    if fajardoFile is not None:
+        fajardoFileCsv.close()
+
+
 def update():
     while True:
         settings.LOCK.acquire()
@@ -267,15 +333,22 @@ def update():
             try:
                 print(("funciona"))
                 tweetText = '\"%s\",\"%s\",\"%s\"\n' % (tweet[0], tweet[1], tweet[2])
-                files = TwitterFeed.getFile(tweet[2])
+                openFiles()
+                files = getFile(tweet[2])
+                saved = False
                 if files is not None:
                     for file in files:
                         file.write(tweetText)
+                        saved = True
 
-                addToCandidate(tweet)
+                closeFiles()
+                if saved:
+                    addToCandidate(tweet)
+                
             except Exception as e:
                 1
         settings.TWEETS = []
+
         settings.FEED_LOCK.release()
         settings.LOCK.release()
         time.sleep(30)
@@ -304,7 +377,9 @@ def fillDto():
     global feed
     feed = TwitterFeed
     feed.stream()
-    Pool(1).apply_async(update, [])
+    d = threading.Thread(name='daemon', target=update)
+    d.setDaemon(True)
+    d.start()
 
 
 

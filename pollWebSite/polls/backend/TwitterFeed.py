@@ -29,39 +29,11 @@ DEBUG = os.getenv('P2DEBUG')
 
 twitterStream = None
 
-vargasFile = None
-petroFile = None
-calleFile = None
-duqueFile = None
-fajardoFile = None
-
 
 def doAuth():
     auth = OAuthHandler(ckey, csecret)
     auth.set_access_token(atoken, asecret)
     return auth
-
-
-def getFile(text):
-    files = []
-    if candidates[0].lower() in text.lower() or candidates[1].lower() in text.lower():
-        files.append(vargasFile)
-
-    if candidates[2].lower() in text.lower() or candidates[3].lower() in text.lower():
-        files.append(petroFile)
-
-    if candidates[4].lower() in text.lower() or candidates[5].lower() in text.lower():
-        files.append(calleFile)
-
-    if candidates[6].lower() in text.lower() or candidates[7].lower() in text.lower():
-        files.append(duqueFile)
-
-    if candidates[8].lower() in text.lower() or candidates[9].lower() in text.lower():
-        files.append(fajardoFile)
-
-    if len(files) > 0:
-        return files
-    return None
 
 
 def authorFilter(user):
@@ -108,6 +80,7 @@ class Listener(StreamListener):
             settings.FEED_LOCK.acquire()
             created = status.created_at
             tweet = [user, created, text]
+            print("appended")
             settings.TWEETS.append(tweet)
             settings.FEED_LOCK.release()
         return True
@@ -132,26 +105,6 @@ def search(date):
 
 def stream():
     auth = doAuth()
-    global vargasFile
-    module_dir = os.path.dirname(__file__)
-    file_path = os.path.join(module_dir, './Tweets/tweets_of_vargas.csv')
-    vargasFile = open(file_path, 'a')
-    global petroFile
-    module_dir = os.path.dirname(__file__)
-    file_path = os.path.join(module_dir, './Tweets/tweets_of_petro.csv')
-    vargasFile = open(file_path, 'a')
-    global calleFile
-    module_dir = os.path.dirname(__file__)
-    file_path = os.path.join(module_dir, './Tweets/tweets_of_calle.csv')
-    vargasFile = open(file_path, 'a')
-    global duqueFile
-    module_dir = os.path.dirname(__file__)
-    file_path = os.path.join(module_dir, './Tweets/tweets_of_duque.csv')
-    vargasFile = open(file_path, 'a')
-    global fajardoFile
-    module_dir = os.path.dirname(__file__)
-    file_path = os.path.join(module_dir, './Tweets/tweets_of_fajardo.csv')
-    vargasFile = open(file_path, 'a')
     global twitterStream
     twitterStream = Stream(auth, Listener(), tweet_mode='extended')
     twitterStream.filter(track=candidates, async=True)
@@ -161,15 +114,5 @@ def exit_handler():
     global twitterStream
     if twitterStream is not None:
         twitterStream.disconnect()
-    if vargasFile is not None:
-        vargasFile.close()
-    if petroFile is not None:
-        petroFile.close()
-    if calleFile is not None:
-        calleFile.close()
-    if duqueFile is not None:
-        duqueFile.close()
-    if fajardoFile is not None:
-        fajardoFile.close()
 
 atexit.register(exit_handler)
