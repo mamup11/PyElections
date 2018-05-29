@@ -3,6 +3,7 @@ Librerias necesarias:
 - pip install sklear
 - pip install nltk
 - pip install tweepy
+- pip install django
 
 Correr:
 - python3.6 manage.py runserver
