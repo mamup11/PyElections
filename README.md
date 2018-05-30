@@ -49,4 +49,6 @@ https://drive.google.com/drive/folders/1OFv1wChiWaFaoy6Pv5o5LaaQatCd7FWE?usp=sha
 ### Run
 Once the requeriments listed behind are met you are able to run this project with the following command:
 
-`$ python manage.py runserver`
+(Ipv4 is the ip assigned by the router to the device)
+
+`$ python manage.py runserver ipv4:8000`
