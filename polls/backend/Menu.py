@@ -198,7 +198,7 @@ def porcentajes(prediction):
 
 def createDto(candidate):
     name = selectName(candidate)
-    tweets = readFile(candidate, 10)
+    tweets = readFile(candidate, -1)
     veces_mencionado = len(tweets)
     personas_hablando = len(getAuthors(tweets))
     threeMinutesAgo = datetime.now() - timedelta(seconds=180)
