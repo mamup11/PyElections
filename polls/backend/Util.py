@@ -3,6 +3,20 @@ import os
 from datetime import datetime
 from datetime import timedelta
 
+time_zone = None
+try:
+    tzone = os.getenv('TZONE')
+    if tzone is None:
+        time_zone = 0
+    else:
+        time_zone = int(tzone) * -1
+except Exception as e:
+    print("Bad Time Zone")
+    exit(-1)
+
+
+
+
 def readTrainingDataCsv(filename, limit):
     module_dir = os.path.dirname(__file__)
     file_path = os.path.join(module_dir, filename)
@@ -58,7 +72,7 @@ def readTweetsCsv(filename, limit):
             break
         if len(row) == 3:
             count = count + 1
-            timeAdjust = timedelta(hours=5)
+            timeAdjust = timedelta(hours=time_zone)
             row[1] = datetime.strptime(str(row[1]), '%Y-%m-%d  %H:%M:%S') - timeAdjust
             tweets.append(row)
 

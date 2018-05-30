@@ -363,6 +363,8 @@ def update():
 
 def fillDto():
     pool = Pool(5)
+    print("Start loading: " + datetime.now().__str__())
+
     vargasThread = pool.apply_async(createDto, [1])
     petroThread = pool.apply_async(createDto, [2])
     calleThread = pool.apply_async(createDto, [3])
@@ -373,6 +375,8 @@ def fillDto():
     calleDto, calleTweets = calleThread.get()
     duqueDto, duqueTweets = duqueThread.get()
     fajardoDto, fajardoTweets = fajardoThread.get()
+
+    print("End loading: " + datetime.now().__str__())
 
     candidates = [vargasDto, petroDto, calleDto, duqueDto, fajardoDto]
     settings.CANDIDATOS = candidates
