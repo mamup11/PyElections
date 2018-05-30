@@ -44,7 +44,7 @@ Time (this variable must be set with the time zone of the device, i.e. for UTCâˆ
 In this repository you will find a folder named "Tweets" where are 5 csv files that contains tweets for each candidate, but this is a dev dataset and its not complete.
 If you want to run this program with a bigger dataset of tweets then you should replace the folder "Tweets" with the content of the following link:
 
-
+https://drive.google.com/drive/folders/1OFv1wChiWaFaoy6Pv5o5LaaQatCd7FWE?usp=sharing
 
 ### Run
 Once the requeriments listed behind are met you are able to run this project with the following command:
