@@ -6,7 +6,7 @@ This results are only informative and do not pretend to predict the winners neit
 
 ### Libraries
 
-In order to execute this program the following libreries are needed:
+In order to execute this program the following libraries are needed:
 
 - Python 3.6
 
@@ -38,6 +38,12 @@ Twitter authentification:
 Time (this variable must be set with the time zone of the device, i.e. for UTC−05:00 put -5):
 
 `TZONE=-5`
+
+### Data
+
+In this repository you will find a folder named "Tweets" where are 5 csv files that contains tweets for each candidate, but this is a dev dataset and its not complete.
+If you want to run this program with a bigger dataset of tweets then you should replace the folder "Tweets" with the content of the following link:
+
 
 
 ### Run
